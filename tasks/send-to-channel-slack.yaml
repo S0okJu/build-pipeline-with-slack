@@ -18,8 +18,10 @@ spec:
     - name: SLACK_CHANNEL_ID
       type: string
       description: slack channel id
+      default: ""
     - name: SLACK_BOT_NAME
       type: string
+      default: "Tekton Bot"
       description: slack bot name
     - name: TASKS_STATUS
       type: string
