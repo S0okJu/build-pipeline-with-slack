@@ -1,0 +1,116 @@
+apiVersion: tekton.dev/v1beta1
+kind: Task
+metadata:
+  name: update-kustomization-image
+spec:
+  params:
+    - name: GIT_REPOSITORY
+      description: The URL of the Git repository to clone
+      type: string
+      default: ""
+    - name: GIT_REF
+      description: The Git revision to check out
+      type: string
+      default: "main"
+    - name: NEW_IMAGE
+      description: The name of the image to build and push
+      type: string
+    - name: NEW_DIGEST
+      type: string 
+    - name: KUSTOMIZATION_PATH
+      description: The name of the kustomization path to update 
+      type: string
+    - name: GIT_USER_NAME
+      description: The name of the Git user
+      type: string
+    - name: GIT_USER_EMAIL
+      description: The email of the Git user
+      type: string
+  results:
+    - name: GIT_COMMIT
+      description: The commit hash of the updated repository
+  workspaces:
+    - name: shared
+      description: The workspace to share between tasks
+  steps:
+    - name: git-clone
+      image: alpine/git:latest
+      script: |
+        #!/bin/sh
+        set -ex
+
+        echo "=== Starting Git Clone Step ==="
+        echo "Repository: $(params.GIT_REPOSITORY)"
+        echo "Branch: $(params.GIT_REF)"
+
+        if [ -d "$(workspaces.shared.path)/repo" ] && [ "$(ls -A $(workspaces.shared.path)/repo)" ]; then
+          echo "Cleaning existing repository directory..."
+          rm -rf "/workspace/shared/repo"
+        fi
+
+        echo "Cloning repository..."
+        git clone $(params.GIT_REPOSITORY) -b $(params.GIT_REF) $(workspaces.shared.path)/repo
+        cd $(workspaces.shared.path)/repo 
+        
+        echo "Checking out branch: $(params.GIT_REF)"
+        git checkout $(params.GIT_REF)
+        
+        echo "Saving commit hash..."
+        git rev-parse HEAD > /workspace/shared/GIT_COMMIT.txt
+        
+        echo "Git clone completed successfully"
+
+    - name: update-kustomization
+      image: smartive/kustomize:latest
+      script: |
+        #!/bin/sh
+        set -ex
+        echo "=== Starting Kustomization Update Step ==="
+        echo "Target directory: $(workspaces.shared.path)/repo/$(params.KUSTOMIZATION_PATH)"
+        cd $(workspaces.shared.path)/repo/$(params.KUSTOMIZATION_PATH)
+
+        echo "Current directory: $(pwd)"
+        echo "Updating image to: $(params.NEW_IMAGE)@$(params.NEW_DIGEST)"
+        kustomize edit set image $(params.NEW_IMAGE)@$(params.NEW_DIGEST)
+        
+        echo "Updated kustomization.yaml contents:"
+        cat kustomization.yaml
+        echo "Kustomization update completed successfully"
+
+    - name: commit-changes
+      image: alpine/git:latest
+      script: |
+        #!/bin/sh
+        set -ex
+        echo "=== Starting Git Commit and Push Step ==="
+        cd $(workspaces.shared.path)/repo/$(params.KUSTOMIZATION_PATH)
+
+        echo "Configuring git user..."
+        git config user.name $(params.GIT_USER_NAME)
+        git config user.email $(params.GIT_USER_EMAIL)
+        
+        echo "Current git status:"
+        git status 
+        
+        echo "Adding kustomization.yaml to git..."
+        git add ./kustomization.yaml
+        
+        echo "Committing changes..."
+        git commit -m "Update image to $(params.NEW_IMAGE)"
+        
+        echo "Pushing changes to remote repository..."
+        git push
+        EXIT_CODE="$?"
+        if [ "$EXIT_CODE" -ne 0 ]; then
+          echo "Error: Failed to push changes to the repository."
+          echo "Exit code: $EXIT_CODE"
+          echo "Last git error: $(git status)"
+          exit 1
+        fi
+        
+        echo "Changes pushed successfully to $(params.GIT_REPOSITORY)"
+        echo "=== Git Update Process Completed Successfully ==="
+  
+
+    
+    

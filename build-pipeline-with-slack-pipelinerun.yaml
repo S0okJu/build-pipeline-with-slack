@@ -1,0 +1,50 @@
+apiVersion: tekton.dev/v1beta1
+kind: PipelineRun
+metadata:
+  name: build-pipeline-with-slack-run
+spec:
+  pipelineRef:
+    name: build-pipeline-with-slack-pipeline
+  params:
+    # 애플리케이션 저장소 관련 파라미터
+    - name: APPLICATION_REPOSITORY
+      value: "https://github.com/your-org/your-app.git"
+    - name: APPLICATION_REVISION
+      value: "main"
+    - name: APPLICATION_CONTAINER_IMAGE
+      value: "quay.io/your-org/your-app:latest"
+    - name: APPLICATION_CONTEXT_DIR
+      value: "."
+
+    # 설정 저장소 관련 파라미터
+    - name: CONFIG_REPOSITORY
+      value: "https://github.com/your-org/your-config.git"
+    - name: CONFIG_REVISION
+      value: "main"
+    - name: CONFIG_KUSTOMIZATION_PATH
+      value: "k8s/overlays/production"
+
+    # Git 사용자 정보
+    - name: GIT_USER_NAME
+      value: "your git user name"
+    - name: GIT_USER_EMAIL
+      value: "your git user email"
+
+    # Slack 관련 파라미터
+    - name: SLACK_TOKEN_SECRET
+      value: "slack-token-secret"
+    - name: SLACK_CHANNEL_ID
+      value: "#deployments"
+    - name: SLACK_BOT_NAME
+      value: "Tekton Bot"
+
+  workspaces:
+    - name: shared
+      volumeClaimTemplate:
+        spec:
+          accessModes:
+            - ReadWriteOnce
+          storageClassName: nfs-client
+          resources:
+            requests:
+              storage: 100Mi

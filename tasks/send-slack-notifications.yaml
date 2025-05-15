@@ -1,0 +1,85 @@
+apiVersion: tekton.dev/v1beta1
+kind: Task
+metadata:
+  name: send-to-channel-slack
+
+spec:
+  description: |
+    This task sends a message to a Slack channel with a color block and a message.
+    When the pipeline succeeds, the green color block and the message is sent.
+    When the pipeline fails, the red color block and the message is sent.
+    The message includes the pipeline name, the pipeline run name, and the status.
+
+  params:
+    - name: SLACK_TOKEN_SECRET
+      type: string
+      description: secret name of the slack app access token (key는 token)
+      default: slack-token-secret
+    - name: SLACK_CHANNEL_ID
+      type: string
+      description: slack channel id
+    - name: SLACK_BOT_NAME
+      type: string
+      description: slack bot name
+    - name: TASKS_STATUS
+      type: string
+      description: pipeline status
+    - name: PIPELINE_NAME
+      type: string
+      description: pipeline name
+
+  steps:
+    - name: post
+      image: curlimages/curl:7.70.0
+      env:
+        - name: TOKEN
+          valueFrom:
+            secretKeyRef:
+              name: $(params.SLACK_TOKEN_SECRET)
+              key: token
+      script: |
+        #!/bin/sh
+        if [ "$(params.status)" = "Succeeded" ]; then
+          COLOR="#4BB543"
+          EMOJI=":white_check_mark:"
+          STATUS_TEXT="*성공*"
+        else
+          COLOR="#FF0000"
+          EMOJI=":x:"
+          STATUS_TEXT="*실패*"
+        fi
+
+        # Block Kit + attachments 조합 (컬러 바 + 블록)
+        cat <<EOF > /tmp/slack_message.json
+        {
+          "channel": "$(params.SLACK_CHANNEL_ID)",
+          "username": "$(params.SLACK_BOT_NAME)",
+          "attachments": [
+            {
+              "color": "$COLOR",
+              "blocks": [
+                {
+                  "type": "header",
+                  "text": {
+                    "type": "plain_text",
+                    "text": "$EMOJI Tekton CI 결과"
+                  }
+                },
+                {
+                  "type": "section",
+                  "text": {
+                    "type": "mrkdwn",
+                    "text": "*상태*: $STATUS_TEXT\n*파이프라인*: \`$(params.PIPELINE_NAME)\`"
+                  }
+                }
+              ]
+            }
+          ]
+        }
+        EOF
+
+        /usr/bin/curl -X POST \
+          -H 'Content-type: application/json' \
+          -H "Authorization: Bearer $TOKEN" \
+          --data @/tmp/slack_message.json \
+          https://slack.com/api/chat.postMessage

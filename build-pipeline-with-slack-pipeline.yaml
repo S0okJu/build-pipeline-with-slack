@@ -1,0 +1,132 @@
+apiVersion: tekton.dev/v1beta1
+kind: Pipeline
+metadata:
+  name: build-pipeline-with-slack-pipeline
+spec:
+  params:
+    - name: APPLICATION_REPOSITORY
+      type: string
+      description: "The URL of the application repository"
+    - name: APPLICATION_REVISION
+      type: string
+      description: "The revision of the application"
+      default: "main"
+    - name: APPLICATION_CONTAINER_IMAGE
+      type: string
+      description: "The container image of the application"
+    - name: APPLICATION_CONTEXT_DIR
+      type: string
+      description: "The context directory of the application"
+      default: "."
+    - name: CONFIG_REPOSITORY
+      type: string
+      description: "The URL of the config repository"
+    - name: CONFIG_REVISION
+      type: string
+      description: "The revision of the config"
+      default: "main"
+    - name: CONFIG_KUSTOMIZATION_PATH
+      type: string
+      description: "The kustomization path of the config"
+      default: ""
+    - name: GIT_USER_NAME
+      type: string
+      description: "The name of the Git user"
+    - name: GIT_USER_EMAIL
+      type: string
+      description: "The email of the Git user"
+    - name: SLACK_TOKEN_SECRET
+      type: string
+      description: "The Slack token secret"
+      default: "slack-token-secret"
+    - name: SLACK_CHANNEL
+      type: string
+      description: "The Slack channel"
+    - name: SLACK_BOT_NAME
+      type: string
+      description: "The Slack bot name"
+      default: "Tekton Bot"
+  workspaces:
+    - name: shared  # 모든 태스크가 공유하는 워크스페이스
+
+  tasks:
+    # NOTE: 구체적인 파라미터는 아래의 링크를 통해 확인할 수 있습니다. 
+    # Tekton Hub: https://hub.tekton.dev/tekton/task/git-clone
+    - name: git-clone
+      taskRef:
+        name: git-clone
+      params:
+        - name: url
+          value: $(params.APPLICATION_REPOSITORY)
+        - name: revision
+          value: $(params.APPLICATION_REVISION)
+        - name: deleteExisting
+          value: "true"
+      workspaces:
+        - name: output
+          workspace: shared
+
+    # NOTE: 구체적인 파라미터는 아래의 링크를 통해 확인할 수 있습니다. 
+    # Tekton Hub: https://hub.tekton.dev/tekton/task/buildah
+    - name: buildah-build
+      taskRef:
+        name: buildah
+      runAfter: ["git-clone"]
+      params:
+        - name: IMAGE
+          value: $(params.APPLICATION_CONTAINER_IMAGE)
+        - name: CONTEXT
+          value: "$(workspaces.source.path)/$(params.APPLICATION_CONTEXT_DIR)"
+        - name: TLSVERIFY
+          value: "false"
+      workspaces:
+        - name: source
+          workspace: shared
+    
+    # NOTE: 세부 코드는 /tasks/update-kustomization-image.yaml 파일을 참고해주세요는
+    # 구체적인 파라미터는 /docs/update-kustomization-image.md 파일을 참고해주세요.
+    - name: update-kustomization-image
+      taskRef:
+        name: update-kustomization-image
+      runAfter: ["buildah-build"]
+      params:
+        - name: GIT_REPOSITORY
+          value: $(params.CONFIG_REPOSITORY)
+        - name: GIT_REF
+          value: $(params.CONFIG_REVISION)
+        - name: NEW_IMAGE
+          value: $(params.APPLICATION_CONTAINER_IMAGE)
+        - name: NEW_DIGEST
+          value: $(tasks.buildah-build.results.IMAGE_DIGEST)
+        - name: KUSTOMIZATION_PATH
+          value: $(params.CONFIG_KUSTOMIZATION_PATH)
+        - name: GIT_USER_NAME
+          value: $(params.GIT_USER_NAME)
+        - name: GIT_USER_EMAIL
+          value: $(params.GIT_USER_EMAIL)
+      workspaces:
+        - name: shared
+          workspace: shared
+  
+  # NOTE: 세부 코드는 /tasks/send-slack-notifications.yaml 파일을 참고해주세요.
+  # 구체적인 파라미터는 /docs/send-slack-notifications.md 파일을 참고해주세요.
+  finally:
+    - name: slack-notification
+      taskRef:
+        name: send-to-channel-slack
+      params:
+        - name: SLACK_TOKEN_SECRET
+          value: $(params.SLACK_TOKEN_SECRET)
+        - name: SLACK_CHANNEL
+          value: $(params.SLACK_CHANNEL)
+        - name: TASKS_STATUS
+          value: "$(tasks.status)"
+        - name: PIPELINE_NAME
+          value: "$(context.pipeline.name)"
+        - name: PIPELINE_RUN_NAME
+          value: "$(context.pipelineRun.name)"
+        - name: SLACK_BOT_NAME
+          value: $(params.SLACK_BOT_NAME)
+
+
+          
