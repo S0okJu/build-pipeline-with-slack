@@ -4,13 +4,13 @@ PipelineRun의 결과에 맞춰서 Slack 앱에 알림을 보내는 Task입니�
 
 #### Parameters
 
-|      **Key**       |    **Default**     |                             **Description**                             |
-| :----------------: | :----------------: | :---------------------------------------------------------------------: |
-| SLACK_TOKEN_SECRET | slack-token-secret |                     slack에서 발급해주는 bot token                      |
-|  SLACK_CHANNEL_ID  |         ""         |                         전송할 slack channel id                         |
-|   SLACK_BOT_NAME   |     Tekton Bot     |                        Slack에서 생성한 bot 이름                        |
-|    TASKS_STATUS    |         x          |    Task 실행 결과. **주로 Pipline 파라미터를 통해 인자를 받습니다.**    |
-|   PIPELINE_NAME    |         x          | 실행한 Pipeline 이름. **주로 Pipline 파라미터를 통해 인자를 받습니다.** |
+|      **Key**       |                             **Description**                             |    **Default**     |
+| :----------------: | :---------------------------------------------------------------------: | :----------------: |
+| SLACK_TOKEN_SECRET |                     slack에서 발급해주는 bot token                      | slack-token-secret |
+|  SLACK_CHANNEL_ID  |                         전송할 slack channel id                         |         ""         |
+|   SLACK_BOT_NAME   |                        Slack에서 생성한 bot 이름                        |     Tekton Bot     |
+|    TASKS_STATUS    |    Task 실행 결과. **주로 Pipline 파라미터를 통해 인자를 받습니다.**    |         x          |
+|   PIPELINE_NAME    | 실행한 Pipeline 이름. **주로 Pipline 파라미터를 통해 인자를 받습니다.** |         x          |
 
 #### Usage
 

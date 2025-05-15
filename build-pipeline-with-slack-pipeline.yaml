@@ -7,6 +7,7 @@ spec:
     - name: APPLICATION_REPOSITORY
       type: string
       description: "The URL of the application repository"
+      default: ""
     - name: APPLICATION_REVISION
       type: string
       description: "The revision of the application"
@@ -14,6 +15,7 @@ spec:
     - name: APPLICATION_CONTAINER_IMAGE
       type: string
       description: "The container image of the application"
+      default: ""
     - name: APPLICATION_CONTEXT_DIR
       type: string
       description: "The context directory of the application"
@@ -21,6 +23,7 @@ spec:
     - name: CONFIG_REPOSITORY
       type: string
       description: "The URL of the config repository"
+      default: ""
     - name: CONFIG_REVISION
       type: string
       description: "The revision of the config"
@@ -32,16 +35,19 @@ spec:
     - name: GIT_USER_NAME
       type: string
       description: "The name of the Git user"
+      default: ""
     - name: GIT_USER_EMAIL
       type: string
       description: "The email of the Git user"
+      default: ""
     - name: SLACK_TOKEN_SECRET
       type: string
       description: "The Slack token secret"
-      default: "slack-token-secret"
+      default: ""
     - name: SLACK_CHANNEL_ID
       type: string
       description: "The Slack channel ID"
+      default: ""
     - name: SLACK_BOT_NAME
       type: string
       description: "The Slack bot name"
