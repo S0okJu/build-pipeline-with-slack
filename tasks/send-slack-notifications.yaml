@@ -39,7 +39,7 @@ spec:
               key: token
       script: |
         #!/bin/sh
-        if [ "$(params.status)" = "Succeeded" ]; then
+        if [ "$(params.TASKS_STATUS)" = "Succeeded" ]; then
           COLOR="#4BB543"
           EMOJI=":white_check_mark:"
           STATUS_TEXT="*성공*"

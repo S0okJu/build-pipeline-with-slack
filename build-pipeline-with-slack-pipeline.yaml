@@ -39,9 +39,9 @@ spec:
       type: string
       description: "The Slack token secret"
       default: "slack-token-secret"
-    - name: SLACK_CHANNEL
+    - name: SLACK_CHANNEL_ID
       type: string
-      description: "The Slack channel"
+      description: "The Slack channel ID"
     - name: SLACK_BOT_NAME
       type: string
       description: "The Slack bot name"
@@ -117,8 +117,8 @@ spec:
       params:
         - name: SLACK_TOKEN_SECRET
           value: $(params.SLACK_TOKEN_SECRET)
-        - name: SLACK_CHANNEL
-          value: $(params.SLACK_CHANNEL)
+        - name: SLACK_CHANNEL_ID
+          value: $(params.SLACK_CHANNEL_ID)
         - name: TASKS_STATUS
           value: "$(tasks.status)"
         - name: PIPELINE_NAME
