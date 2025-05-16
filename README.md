@@ -125,7 +125,6 @@ spec:
         spec:
           accessModes:
             - ReadWriteOnce
-          storageClassName: nfs-client
           resources:
             requests:
               storage: 100Mi
