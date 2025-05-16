@@ -5,6 +5,7 @@ metadata:
 spec:
   pipelineRef:
     name: build-pipeline-with-slack-pipeline
+  serviceAccountName: tekton-trigger-sa
   params:
     # 애플리케이션 저장소 관련 파라미터
     - name: APPLICATION_REPOSITORY
@@ -44,7 +45,6 @@ spec:
         spec:
           accessModes:
             - ReadWriteOnce
-          storageClassName: nfs-client
           resources:
             requests:
               storage: 100Mi

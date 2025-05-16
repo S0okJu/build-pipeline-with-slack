@@ -1,8 +1,8 @@
-## send-to-channel-slack
+# send-to-channel-slack
 
 PipelineRun의 결과에 맞춰서 Slack 앱에 알림을 보내는 Task입니다.
 
-#### Parameters
+### Parameters
 
 |      **Key**       |                             **Description**                             |    **Default**     |
 | :----------------: | :---------------------------------------------------------------------: | :----------------: |
@@ -12,7 +12,7 @@ PipelineRun의 결과에 맞춰서 Slack 앱에 알림을 보내는 Task입니�
 |    TASKS_STATUS    |    Task 실행 결과. **주로 Pipline 파라미터를 통해 인자를 받습니다.**    |         x          |
 |   PIPELINE_NAME    | 실행한 Pipeline 이름. **주로 Pipline 파라미터를 통해 인자를 받습니다.** |         x          |
 
-#### Usage
+### Usage
 
 Slack를 사용하기 위해서는 slack bot token이 포함된 secret 리소스가 필요합니다.
 
@@ -49,4 +49,4 @@ spec:
 
 슬랙에서 아래와 같은 메세지를 확인할 수 있습니다.
 
-![Tekton 성공 메세지](./imgs/tekton-success.png) ![Tekton 실패 메세지](./imgs/tekton-failed.png)
+![Tekton 성공 메세지](../imgs/tekton-success.png) ![Tekton 실패 메세지](../imgs/tekton-failed.png)

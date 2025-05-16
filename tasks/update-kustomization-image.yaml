@@ -15,18 +15,23 @@ spec:
     - name: NEW_IMAGE
       description: The name of the image to build and push
       type: string
+      default: ""
     - name: NEW_DIGEST
       type: string 
+      default: ""
     - name: KUSTOMIZATION_PATH
       description: The name of the kustomization path to update 
       type: string
+      default: ""
     - name: GIT_USER_NAME
       description: The name of the Git user
       type: string
+      default: ""
     - name: GIT_USER_EMAIL
       description: The email of the Git user
       type: string
-  results:
+      default: ""
+  results:  
     - name: GIT_COMMIT
       description: The commit hash of the updated repository
   workspaces:
