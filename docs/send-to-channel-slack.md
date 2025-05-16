@@ -47,6 +47,8 @@ spec:
       value: "build-pipeline-with-slack-pipeline"
 ```
 
+#### 실행 결과
+
 슬랙에서 아래와 같은 메세지를 확인할 수 있습니다.
 
 ![Tekton 성공 메세지](../imgs/tekton-success.png) ![Tekton 실패 메세지](../imgs/tekton-failed.png)

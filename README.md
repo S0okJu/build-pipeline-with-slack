@@ -131,5 +131,6 @@ spec:
               storage: 100Mi
 ```
 
-실행 결과
+#### 실행 결과
+
 ![PipelineRun 실행 결과](./imgs/pipeline-result.png)
